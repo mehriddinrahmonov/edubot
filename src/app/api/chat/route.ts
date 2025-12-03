@@ -8,12 +8,36 @@ export async function POST(req: Request) {
         const apiKey = process.env.GEMINI_API_KEY;
 
         if (!apiKey) {
-            console.warn("GEMINI_API_KEY is not set. Returning mock response.");
-            // Mock response logic
-            await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate delay
-            return NextResponse.json({
-                response: "I'm currently running in demo mode because the API key is missing. \n\nBased on your data:\n- Your next class is Calculus I at 9:00 AM.\n- Your average grade is 85%.\n\nTo enable real AI responses, please add a valid GEMINI_API_KEY to your .env.local file."
-            });
+            // Rule-based fallback for demo mode
+            const lowerMsg = message.toLowerCase();
+            let responseText = "I can help you with your schedule and grades.";
+
+            if (lowerMsg.includes("next class") || lowerMsg.includes("schedule")) {
+                const nextClass = mockStudentData.classes.find(c => new Date(c.startTime) > new Date());
+                if (nextClass) {
+                    responseText = `Your next class is ${nextClass.courseName} at ${new Date(nextClass.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} in ${nextClass.location}.`;
+                } else {
+                    responseText = "You don't have any more classes today.";
+                }
+            } else if (lowerMsg.includes("grade") || lowerMsg.includes("score")) {
+                if (lowerMsg.includes("calculus") || lowerMsg.includes("math")) {
+                    const grade = mockStudentData.grades.find(g => g.courseName.includes("Calculus"));
+                    responseText = grade ? `Your grade in Calculus is ${grade.score}/${grade.maxScore}.` : "I couldn't find a grade for Calculus.";
+                } else if (lowerMsg.includes("cs") || lowerMsg.includes("computer")) {
+                    const grade = mockStudentData.grades.find(g => g.courseName.includes("Computer"));
+                    responseText = grade ? `Your grade in Computer Science is ${grade.score}/${grade.maxScore}.` : "I couldn't find a grade for Computer Science.";
+                } else {
+                    // Average
+                    const total = mockStudentData.grades.reduce((acc, g) => acc + (g.score / g.maxScore), 0);
+                    const avg = Math.round((total / mockStudentData.grades.length) * 100);
+                    responseText = `Your overall average grade is ${avg}%.`;
+                }
+            } else if (lowerMsg.includes("hello") || lowerMsg.includes("hi")) {
+                responseText = `Hello ${mockStudentData.name}! How can I help you today?`;
+            }
+
+            await new Promise(resolve => setTimeout(resolve, 500)); // Simulate delay
+            return NextResponse.json({ response: responseText });
         }
 
         const genAI = new GoogleGenerativeAI(apiKey);

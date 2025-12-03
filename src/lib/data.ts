@@ -12,7 +12,7 @@ const setTime = (date: Date, hours: number, minutes: number) => {
 };
 
 export const mockStudentData: StudentData = {
-    name: "Alex Student",
+    name: "Javohirbek",
     classes: [
         {
             id: "c1",

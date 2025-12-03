@@ -83,7 +83,7 @@ export default function Sidebar() {
                             <span className="text-sm font-medium">AS</span>
                         </div>
                         <div className="text-sm">
-                            <p className="font-medium text-gray-900">Alex Student</p>
+                            <p className="font-medium text-gray-900">Javohirbek</p>
                             <p>Student</p>
                         </div>
                     </div>
